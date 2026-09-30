@@ -1,6 +1,6 @@
 [package]
 name = "sea-orm-timescale"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2024"
 description = "TimescaleDB extension for Sea-ORM: time_bucket, hypertables, compression, continuous aggregates"
 license = "MIT"
@@ -9,11 +9,11 @@ keywords = ["sea-orm", "timescaledb", "time-series", "postgresql"]
 categories = ["database"]
 
 [dependencies]
-sea-orm = { version = "1.1.19", default-features = false }
-sea-query = "0.32"
+sea-orm = { version = "2", default-features = false }
+sea-query = "1"
 chrono = { version = "0.4", features = ["serde"] }
 
 [dev-dependencies]
-sea-orm = { version = "1.1.19", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono", "with-uuid"] }
+sea-orm = { version = "2", features = ["sqlx-postgres", "runtime-tokio-rustls", "macros", "with-chrono", "with-uuid"] }
 tokio = { version = "1", features = ["full"] }
 uuid = { version = "1", features = ["v4"] }

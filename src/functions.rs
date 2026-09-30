@@ -14,7 +14,7 @@ use crate::types::Interval;
 pub fn time_bucket(interval: &Interval, column: impl IntoIden + Clone) -> SimpleExpr {
     let iden = column.into_iden();
     let col_name = iden.to_string();
-    SimpleExpr::Custom(format!("time_bucket('{interval}', \"{col_name}\")"))
+    SimpleExpr::Custom(format!("time_bucket('{interval}', \"{col_name}\")").into())
 }
 
 /// Generates a `time_bucket_gapfill(interval, column)` expression.
@@ -34,7 +34,7 @@ pub fn time_bucket(interval: &Interval, column: impl IntoIden + Clone) -> Simple
 pub fn time_bucket_gapfill(interval: &Interval, column: impl IntoIden + Clone) -> SimpleExpr {
     let iden = column.into_iden();
     let col_name = iden.to_string();
-    SimpleExpr::Custom(format!("time_bucket_gapfill('{interval}', \"{col_name}\")"))
+    SimpleExpr::Custom(format!("time_bucket_gapfill('{interval}', \"{col_name}\")").into())
 }
 
 /// Generates a `first(value_column, time_column)` aggregate expression.
@@ -51,7 +51,7 @@ pub fn time_bucket_gapfill(interval: &Interval, column: impl IntoIden + Clone) -
 pub fn first(value_col: impl IntoIden + Clone, time_col: impl IntoIden + Clone) -> SimpleExpr {
     let value_name = value_col.into_iden().to_string();
     let time_name = time_col.into_iden().to_string();
-    SimpleExpr::Custom(format!("first(\"{value_name}\", \"{time_name}\")"))
+    SimpleExpr::Custom(format!("first(\"{value_name}\", \"{time_name}\")").into())
 }
 
 /// Generates a `last(value_column, time_column)` aggregate expression.
@@ -68,7 +68,7 @@ pub fn first(value_col: impl IntoIden + Clone, time_col: impl IntoIden + Clone) 
 pub fn last(value_col: impl IntoIden + Clone, time_col: impl IntoIden + Clone) -> SimpleExpr {
     let value_name = value_col.into_iden().to_string();
     let time_name = time_col.into_iden().to_string();
-    SimpleExpr::Custom(format!("last(\"{value_name}\", \"{time_name}\")"))
+    SimpleExpr::Custom(format!("last(\"{value_name}\", \"{time_name}\")").into())
 }
 
 /// Wraps a `SimpleExpr` with `locf()` (Last Observation Carried Forward).
@@ -87,13 +87,13 @@ pub fn last(value_col: impl IntoIden + Clone, time_col: impl IntoIden + Clone) -
 /// ```
 pub fn locf(inner: SimpleExpr) -> SimpleExpr {
     match inner {
-        SimpleExpr::Custom(sql) => SimpleExpr::Custom(format!("locf({sql})")),
+        SimpleExpr::Custom(sql) => SimpleExpr::Custom(format!("locf({sql})").into()),
         other => {
             // For non-Custom exprs, render via sea-query and wrap
             let rendered = Query::select().expr(other).to_string(PostgresQueryBuilder);
             // Extract just the expression from "SELECT <expr>"
             let expr_str = rendered.strip_prefix("SELECT ").unwrap_or(&rendered);
-            SimpleExpr::Custom(format!("locf({expr_str})"))
+            SimpleExpr::Custom(format!("locf({expr_str})").into())
         }
     }
 }
@@ -112,9 +112,7 @@ pub fn locf(inner: SimpleExpr) -> SimpleExpr {
 /// ```
 pub fn histogram(column: impl IntoIden + Clone, min: f64, max: f64, buckets: i32) -> SimpleExpr {
     let col_name = column.into_iden().to_string();
-    SimpleExpr::Custom(format!(
-        "histogram(\"{col_name}\", {min}, {max}, {buckets})"
-    ))
+    SimpleExpr::Custom(format!("histogram(\"{col_name}\", {min}, {max}, {buckets})").into())
 }
 
 /// Wraps a `SimpleExpr` with `interpolate()` (linear interpolation for gap filling).
@@ -135,11 +133,11 @@ pub fn histogram(column: impl IntoIden + Clone, min: f64, max: f64, buckets: i32
 /// ```
 pub fn interpolate(inner: SimpleExpr) -> SimpleExpr {
     match inner {
-        SimpleExpr::Custom(sql) => SimpleExpr::Custom(format!("interpolate({sql})")),
+        SimpleExpr::Custom(sql) => SimpleExpr::Custom(format!("interpolate({sql})").into()),
         other => {
             let rendered = Query::select().expr(other).to_string(PostgresQueryBuilder);
             let expr_str = rendered.strip_prefix("SELECT ").unwrap_or(&rendered);
-            SimpleExpr::Custom(format!("interpolate({expr_str})"))
+            SimpleExpr::Custom(format!("interpolate({expr_str})").into())
         }
     }
 }
@@ -168,9 +166,9 @@ pub fn time_bucket_with_origin(
 ) -> SimpleExpr {
     let col_name = column.into_iden().to_string();
     let origin_escaped = origin.replace('\'', "''");
-    SimpleExpr::Custom(format!(
-        "time_bucket('{interval}', \"{col_name}\", origin => '{origin_escaped}')"
-    ))
+    SimpleExpr::Custom(
+        format!("time_bucket('{interval}', \"{col_name}\", origin => '{origin_escaped}')").into(),
+    )
 }
 
 /// Generates a `time_bucket(interval, column, offset)` expression with a bucket offset.
@@ -195,9 +193,9 @@ pub fn time_bucket_with_offset(
     offset: &Interval,
 ) -> SimpleExpr {
     let col_name = column.into_iden().to_string();
-    SimpleExpr::Custom(format!(
-        "time_bucket('{interval}', \"{col_name}\", INTERVAL '{offset}')"
-    ))
+    SimpleExpr::Custom(
+        format!("time_bucket('{interval}', \"{col_name}\", INTERVAL '{offset}')").into(),
+    )
 }
 
 /// Generates a `time_bucket(interval, column, timezone => tz)` expression.
@@ -224,9 +222,9 @@ pub fn time_bucket_tz(
 ) -> SimpleExpr {
     let col_name = column.into_iden().to_string();
     let tz_escaped = timezone.replace('\'', "''");
-    SimpleExpr::Custom(format!(
-        "time_bucket('{interval}', \"{col_name}\", timezone => '{tz_escaped}')"
-    ))
+    SimpleExpr::Custom(
+        format!("time_bucket('{interval}', \"{col_name}\", timezone => '{tz_escaped}')").into(),
+    )
 }
 
 #[cfg(test)]
@@ -237,7 +235,7 @@ mod tests {
     /// Extract the SQL string from a SimpleExpr::Custom variant.
     fn custom_sql(expr: &SimpleExpr) -> &str {
         match expr {
-            SimpleExpr::Custom(s) => s.as_str(),
+            SimpleExpr::Custom(s) => s,
             _ => panic!("Expected SimpleExpr::Custom"),
         }
     }
@@ -271,7 +269,7 @@ mod tests {
 
     #[test]
     fn test_locf_with_custom_expr() {
-        let inner = SimpleExpr::Custom("AVG(\"value\")".to_string());
+        let inner = SimpleExpr::Custom("AVG(\"value\")".to_string().into());
         let expr = locf(inner);
         assert_eq!(custom_sql(&expr), "locf(AVG(\"value\"))");
     }
@@ -284,7 +282,7 @@ mod tests {
 
     #[test]
     fn test_interpolate_with_custom_expr() {
-        let inner = SimpleExpr::Custom("AVG(\"value\")".to_string());
+        let inner = SimpleExpr::Custom("AVG(\"value\")".to_string().into());
         let expr = interpolate(inner);
         assert_eq!(custom_sql(&expr), "interpolate(AVG(\"value\"))");
     }
